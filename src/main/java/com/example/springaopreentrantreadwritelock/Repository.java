@@ -3,25 +3,27 @@ package com.example.springaopreentrantreadwritelock;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import lombok.ToString;
 import org.springframework.stereotype.Component;
 
 @Component
+@ToString
 public class Repository {
 
-    private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final Map<String, String> map = new HashMap<>();
 
-    @ReentrantReadLock
+    @ReentrantLockTransaction(readOnly = true)
     public String getValue(String key) {
         return map.get(key);
     }
 
-    @ReentrantWriteLock
+    @ReentrantLockTransaction
     public void setValue(String key, String value) {
         map.put(key, value);
     }
 
-    @ReentrantWriteLock
+    @ReentrantLockTransaction
     public void clearValues() {
         map.clear();
     }

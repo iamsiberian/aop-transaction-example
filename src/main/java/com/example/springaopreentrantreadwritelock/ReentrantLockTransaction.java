@@ -4,7 +4,8 @@ import java.lang.annotation.*;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-public @interface ReentrantLock {
+@Target({ElementType.METHOD})
+public @interface ReentrantLockTransaction {
     String value() default "lock";
+    boolean readOnly() default false;
 }

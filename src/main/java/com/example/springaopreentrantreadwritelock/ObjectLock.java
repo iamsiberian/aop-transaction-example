@@ -1,27 +1,19 @@
 package com.example.springaopreentrantreadwritelock;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 
 public interface ObjectLock {
 
-    default <T extends Annotation> ReentrantReadWriteLock getObjectLock(
-            ProceedingJoinPoint pjp, Class<T> annotationClass
+    default ReentrantReadWriteLock getObjectLock(
+            ProceedingJoinPoint pjp
     ) {
 
-        MethodSignature signature = (MethodSignature) pjp.getSignature();
-        Method method = signature.getMethod();
-        T reentrantReadOrWriteLockAnnotation = method.getAnnotation(annotationClass);
-        ReentrantLock reentrantLockAnnotation = reentrantReadOrWriteLockAnnotation
-                .annotationType()
-                .getAnnotation(ReentrantLock.class);
-        String reentrantLockName = reentrantLockAnnotation.value();
+        ReentrantLockTransaction reentrantLockTransactionAnnotation = getReentrantLockTransactionAnnotation(pjp);
+        String reentrantLockName = reentrantLockTransactionAnnotation.value();
 
         Object targetObject =  pjp.getTarget();
         Class<?> targetClass = targetObject.getClass();
@@ -41,5 +33,13 @@ public interface ObjectLock {
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    default ReentrantLockTransaction getReentrantLockTransactionAnnotation(
+            ProceedingJoinPoint pjp
+    ) {
+        MethodSignature signature = (MethodSignature) pjp.getSignature();
+        Method method = signature.getMethod();
+        return method.getAnnotation(ReentrantLockTransaction.class);
     }
 }
