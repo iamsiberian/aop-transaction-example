@@ -21,18 +21,19 @@ public class ReentrantWriteLockAspect implements ObjectLock {
 
     @Around("repositoryMethods()")
     public Object measureMethodExecutionTime(ProceedingJoinPoint pjp) throws Throwable {
+        // todo change to arg name
 
-        LOGGER.debug("before lock");
-        ReentrantReadWriteLock objectLock = getObjectLock(pjp);
+        LOGGER.info("before lock");
+        ReentrantReadWriteLock objectLock = getObjectLock(pjp, ReentrantWriteLock.class);
         objectLock.readLock().lock();
 
         String methodName = pjp.getSignature().getName();
-        LOGGER.debug("before method: {} invocation", methodName);
+        LOGGER.info("before method: {} invocation", methodName);
         Object returnValue = pjp.proceed();
-        LOGGER.debug("after method: {} invocation", methodName);
+        LOGGER.info("after method: {} invocation", methodName);
 
         objectLock.readLock().unlock();
-        LOGGER.debug("after unlock");
+        LOGGER.info("after unlock");
 
         return returnValue;
     }

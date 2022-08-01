@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class Repository {
 
-    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final Map<String, String> map = new HashMap<>();
 
     @ReentrantReadLock

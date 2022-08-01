@@ -9,6 +9,6 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
+@ReentrantLock
 public @interface ReentrantReadLock {
-    // todo add field lock name
 }
