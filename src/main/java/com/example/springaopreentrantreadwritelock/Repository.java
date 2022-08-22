@@ -2,15 +2,15 @@ package com.example.springaopreentrantreadwritelock;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import com.example.springaopreentrantreadwritelock.annotation.ReentrantReadWriteLock;
 import lombok.ToString;
 import org.springframework.stereotype.Component;
 
 @Component
+@ReentrantReadWriteLock
 @ToString
 public class Repository {
 
-    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final Map<String, String> map = new HashMap<>();
 
     @ReentrantLockTransaction(readOnly = true)
