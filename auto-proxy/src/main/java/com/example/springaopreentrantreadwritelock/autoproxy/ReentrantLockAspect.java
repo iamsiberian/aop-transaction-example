@@ -29,11 +29,16 @@ public class ReentrantLockAspect implements ObjectLock {
 
             String methodName = pjp.getSignature().getName();
             LOGGER.info("before method: {} invocation", methodName);
-            Object returnValue = pjp.proceed();
-            LOGGER.info("after method: {} invocation", methodName);
 
-            objectLock.readLock().unlock();
-            LOGGER.info("after read unlock");
+            Object returnValue;
+            try {
+                returnValue = pjp.proceed();
+            } finally {
+                LOGGER.info("after method: {} invocation", methodName);
+
+                objectLock.readLock().unlock();
+                LOGGER.info("after read unlock");
+            }
 
             return returnValue;
         } else {
@@ -42,11 +47,16 @@ public class ReentrantLockAspect implements ObjectLock {
 
             String methodName = pjp.getSignature().getName();
             LOGGER.info("before method: {} invocation", methodName);
-            Object returnValue = pjp.proceed();
-            LOGGER.info("after method: {} invocation", methodName);
 
-            objectLock.writeLock().unlock();
-            LOGGER.info("after write unlock");
+            Object returnValue;
+            try {
+                returnValue = pjp.proceed();
+            } finally {
+                LOGGER.info("after method: {} invocation", methodName);
+
+                objectLock.writeLock().unlock();
+                LOGGER.info("after write unlock");
+            }
 
             return returnValue;
         }

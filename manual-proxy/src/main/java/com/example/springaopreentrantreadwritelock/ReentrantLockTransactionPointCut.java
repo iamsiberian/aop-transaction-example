@@ -7,6 +7,6 @@ public class ReentrantLockTransactionPointCut extends StaticMethodMatcherPointcu
 
     @Override
     public boolean matches(Method method, Class<?> targetClass) {
-        return method.getDeclaredAnnotation(ReentrantLockTransactionRepository.class) != null;
+        return method.getDeclaredAnnotation(ReentrantLockTransaction.class) != null;
     }
 }

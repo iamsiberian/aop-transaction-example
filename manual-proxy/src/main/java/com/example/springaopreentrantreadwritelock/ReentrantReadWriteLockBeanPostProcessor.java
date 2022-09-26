@@ -29,39 +29,55 @@ public class ReentrantReadWriteLockBeanPostProcessor implements BeanPostProcesso
 
         Class<?> targetClass = ClassUtils.getUserClass(bean.getClass());
         if (checkReentrantLockAnnotation(targetClass)) {
-            try {
-                Class<?> loaded =  byteBuddy
-                        .subclass(targetClass)
-                        .name("com.example.springaopreentrantreadwritelock.RepositoryWithReentrantLock")
-                        .defineField(
-                                "lock",
-                                java.util.concurrent.locks.ReentrantReadWriteLock.class,
-                                Modifier.PRIVATE | Modifier.FINAL
-                        )
-                        .defineConstructor(Visibility.PUBLIC)
-                        .withParameters(java.util.concurrent.locks.ReentrantReadWriteLock.class)
-                        .intercept(
-                                MethodCall
-                                        .invoke(targetClass.getConstructor())
-                                        .andThen(FieldAccessor.ofField("lock").setsArgumentAt(0))
-                        )
-                        .make()
-                        .load(getClass().getClassLoader())
-                        .getLoaded();
-
-                Object targetObject = loaded
-                        .getConstructor(java.util.concurrent.locks.ReentrantReadWriteLock.class)
-                        .newInstance(new java.util.concurrent.locks.ReentrantReadWriteLock());
-
-                Advisor reentrantLockTransactionAdvisor = createReentrantLockAdvisor();
-
-                return createAopProxyWithAdvisor(targetObject, reentrantLockTransactionAdvisor);
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                throw new RuntimeException(e);
-            }
+            Object targetObject = createTargetObject(createTargetClassWithReentrantLock(targetClass));
+            return createProxyTargetObject(targetObject);
         }
 
         return bean;
+    }
+
+    <T> Class<? extends T> createTargetClassWithReentrantLock(Class<T> targetClass) {
+        try {
+            return byteBuddy
+                    .subclass(targetClass)
+                    .name("com.example.springaopreentrantreadwritelock.RepositoryWithReentrantLock")
+                    .defineField(
+                            "lock",
+                            java.util.concurrent.locks.ReentrantReadWriteLock.class,
+                            Modifier.PRIVATE | Modifier.FINAL
+                    )
+                    .defineConstructor(Visibility.PUBLIC)
+                    .withParameters(java.util.concurrent.locks.ReentrantReadWriteLock.class)
+                    .intercept(
+                            MethodCall
+                                    .invoke(targetClass.getConstructor())
+                                    .andThen(FieldAccessor.ofField("lock").setsArgumentAt(0))
+                    )
+                    .make()
+                    .load(getClass().getClassLoader())
+                    .getLoaded();
+
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    <T> T createTargetObject(Class<? extends T> targetClassWithReentrantLock) {
+        try {
+            return targetClassWithReentrantLock
+                    .getConstructor(java.util.concurrent.locks.ReentrantReadWriteLock.class)
+                    .newInstance(new java.util.concurrent.locks.ReentrantReadWriteLock());
+        } catch (
+                NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e
+        ) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    Object createProxyTargetObject(Object targetObject) {
+        Advisor reentrantLockTransactionAdvisor = createReentrantLockAdvisor();
+
+        return createAopProxyWithAdvisor(targetObject, reentrantLockTransactionAdvisor);
     }
 
     boolean checkReentrantLockAnnotation(Class<?> targetClass) {

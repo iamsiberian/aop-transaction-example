@@ -12,17 +12,25 @@ public class Repository {
 
     private final Map<String, String> map = new HashMap<>();
 
-    @ReentrantLockTransactionRepository(readOnly = true)
+    @ReentrantLockTransaction(readOnly = true)
     public String getValue(String key) {
-        return map.get(key);
+        String value = map.get(key);
+
+        if (value == null) {
+            throw new RuntimeException("""
+            Value by key: %s is null
+        """.formatted(key));
+        }
+
+        return value;
     }
 
-    @ReentrantLockTransactionRepository
+    @ReentrantLockTransaction
     public void setValue(String key, String value) {
         map.put(key, value);
     }
 
-    @ReentrantLockTransactionRepository
+    @ReentrantLockTransaction
     public void clearValues() {
         map.clear();
     }

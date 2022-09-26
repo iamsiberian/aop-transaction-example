@@ -1,4 +1,4 @@
-package com.example.springaopreentrantreadwritelock.autoproxy;
+package com.example.springaopreentrantreadwritelock;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -8,6 +8,8 @@ import java.lang.annotation.Target;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface ReentrantReadWriteLockRepository {
+@Target({ElementType.METHOD})
+public @interface ReentrantLockTransaction {
+    String value() default "lock";
+    boolean readOnly() default false;
 }

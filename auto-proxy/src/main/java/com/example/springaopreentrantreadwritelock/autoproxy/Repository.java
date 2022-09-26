@@ -7,7 +7,6 @@ import lombok.ToString;
 import org.springframework.stereotype.Component;
 
 @Component
-@ReentrantReadWriteLockRepository
 @ToString
 public class Repository {
 
@@ -16,7 +15,15 @@ public class Repository {
 
     @ReentrantLockTransaction(readOnly = true)
     public String getValue(String key) {
-        return map.get(key);
+        String value = map.get(key);
+
+        if (value == null) {
+            throw new RuntimeException("""
+            Value by key: %s is null
+        """.formatted(key));
+        }
+
+        return value;
     }
 
     @ReentrantLockTransaction

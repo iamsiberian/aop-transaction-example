@@ -14,7 +14,7 @@ public class ReentrantLockTransactionAdvice implements MethodInterceptor {
     public Object invoke(MethodInvocation invocation) throws Throwable {
         ReentrantReadWriteLock objectLock = getObjectLock(invocation);
 
-        ReentrantLockTransactionRepository reentrantLockTransactionAnnotation = getReentrantLockTransactionAnnotation(invocation);
+        ReentrantLockTransaction reentrantLockTransactionAnnotation = getReentrantLockTransactionAnnotation(invocation);
 
         String methodName = invocation.getMethod().getName();
         if (reentrantLockTransactionAnnotation.readOnly()) {
@@ -22,11 +22,16 @@ public class ReentrantLockTransactionAdvice implements MethodInterceptor {
             objectLock.readLock().lock();
 
             LOGGER.info("before method: {} invocation", methodName);
-            Object returnValue = invocation.proceed();
-            LOGGER.info("after method: {} invocation", methodName);
 
-            objectLock.readLock().unlock();
-            LOGGER.info("after read unlock");
+            Object returnValue;
+            try {
+                returnValue = invocation.proceed();
+            } finally {
+                LOGGER.info("after method: {} invocation", methodName);
+
+                objectLock.readLock().unlock();
+                LOGGER.info("after read unlock");
+            }
 
             return returnValue;
         } else {
@@ -34,11 +39,16 @@ public class ReentrantLockTransactionAdvice implements MethodInterceptor {
             objectLock.writeLock().lock();
 
             LOGGER.info("before method: {} invocation", methodName);
-            Object returnValue = invocation.proceed();
-            LOGGER.info("after method: {} invocation", methodName);
 
-            objectLock.writeLock().unlock();
-            LOGGER.info("after write unlock");
+            Object returnValue;
+            try {
+                returnValue = invocation.proceed();
+            } finally {
+                LOGGER.info("after method: {} invocation", methodName);
+
+                objectLock.writeLock().unlock();
+                LOGGER.info("after write unlock");
+            }
 
             return returnValue;
         }
@@ -48,7 +58,7 @@ public class ReentrantLockTransactionAdvice implements MethodInterceptor {
             MethodInvocation invocation
     ) {
 
-        ReentrantLockTransactionRepository reentrantLockTransactionAnnotation = getReentrantLockTransactionAnnotation(invocation);
+        ReentrantLockTransaction reentrantLockTransactionAnnotation = getReentrantLockTransactionAnnotation(invocation);
         String reentrantLockName = reentrantLockTransactionAnnotation.value();
 
         Object targetObject = invocation.getThis();
@@ -76,10 +86,10 @@ public class ReentrantLockTransactionAdvice implements MethodInterceptor {
         }
     }
 
-    private ReentrantLockTransactionRepository getReentrantLockTransactionAnnotation(
+    private ReentrantLockTransaction getReentrantLockTransactionAnnotation(
             MethodInvocation invocation
     ) {
         Method method = invocation.getMethod();
-        return method.getAnnotation(ReentrantLockTransactionRepository.class);
+        return method.getAnnotation(ReentrantLockTransaction.class);
     }
 }
